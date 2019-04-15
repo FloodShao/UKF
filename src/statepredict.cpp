@@ -21,9 +21,14 @@ MatrixXd StatePredictor::compute_augmented_sigma(const VectorXd &current_x, cons
     const MatrixXd L = augmented_P.llt().matrixL(); //cholesky decomposition, and lower triangular matrix
     augmented_sigma.col(0) = augmented_x;
     
-    for(int i = 1; i<N_AUGMENT_; i++){
-        augmented_sigma.col(i) = augmented_x + SCALE * L.col(i);
-        augmented_sigma.col(i+N_AUGMENT_) = augmented_x - SCALE * L.col(i);
+    for(int i = 0; i<N_AUGMENT_; i++){
+        const int c = i+1;
+        augmented_sigma.col(c) = augmented_x + SCALE * L.col(i);
+        augmented_sigma.col(c+N_AUGMENT_) = augmented_x - SCALE * L.col(i);
+        
+//        cout <<augmented_sigma.col(c)(0) << endl << augmented_sigma.col(c)(1) << endl
+//            <<augmented_sigma.col(c)(2) << endl << augmented_sigma.col(c)(3) << endl
+//        <<augmented_sigma.col(c)(4) << endl;
     }
     
     return augmented_sigma;
@@ -60,15 +65,15 @@ MatrixXd StatePredictor::predict_sigma(const MatrixXd &augmented_sigma, double d
         
         double p_px, p_py;
         
-        if(fabs(yaw) < THRESH){ //moving straight
+        if(fabs(yawrate) < THRESH){ //moving straight, without yaw change
             p_px = px + speed * cos_yaw * dt + p_noise * cos_yaw;
             p_py = py + speed * sin_yaw * dt + p_noise * sin_yaw;
         } else{
             /*CTRV model, use the integral function*/
-            const double k = speed / yawrate;
+            const double k = speed / yawrate; //divided by 0 problem
             const double theta = yaw + yawrate * dt;
-            p_px = px + k * (sin(theta) - sin(yaw)) + p_noise * cos_yaw;
-            p_py = py + k * (-cos(theta) + cos(yaw)) + p_noise * sin_yaw;
+            p_px = px + k * (sin(theta) - sin_yaw) + p_noise * cos_yaw;
+            p_py = py + k * (-cos(theta) + cos_yaw) + p_noise * sin_yaw;
         }
         
         predicted_sigma(0, i) = p_px;
@@ -88,6 +93,9 @@ VectorXd StatePredictor::predict_x(const MatrixXd &predicted_sigma){
      */
     VectorXd predicted_x = VectorXd::Zero(STATE_DIM_);
     for(int i = 0; i<N_SP_; i++){
+        cout << predicted_sigma.col(i)(0) << endl <<predicted_sigma.col(i)(1) << endl <<
+        predicted_sigma.col(i)(2) << endl << predicted_sigma.col(i)(3) << endl << predicted_sigma.col(i)(4) << endl;
+        
         predicted_x += predicted_sigma.col(i) * WEIGHTS[i];
     }
     return predicted_x;

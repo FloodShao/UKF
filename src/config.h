@@ -41,7 +41,7 @@ const double STD_PY = 0.15; //m
 const double VAR_PX = STD_PX * STD_PX;
 const double VAR_PY = STD_PY * STD_PY;
 
-const int KAPPA = 3 - N_AUGMENT_; // parameter for tuning
+const int KAPPA = 3; // parameter for tuning
 const double SCALE = sqrt(KAPPA + N_AUGMENT_);
 const double W = 0.5 / (double)(KAPPA + N_AUGMENT_);
 const double W0 = (double)KAPPA / (double)(KAPPA + N_AUGMENT_);

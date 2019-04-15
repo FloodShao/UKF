@@ -10,7 +10,7 @@
 
 VectorXd calculate_RMSE(const vector<VectorXd> &estimations, const vector<VectorXd> &ground_truths ) {
     
-    VectorXd RMSE(4);
+    VectorXd RMSE(5);
     int n = estimations.size();
     
     for(int i = 0; i<n; i++){
